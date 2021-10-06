@@ -4,6 +4,12 @@ Backend en Django
 
 ## Instalación
 
+Clonacion del proyecto
+
+```bash
+$ git clone https://github.com/Johguxo/hackaton-bbva-2021/
+```
+
 Esta aplicación web de Django necesita una gran cantidad de paquetes adicionales de Python, por favor ejecute el siguiente comando:
 
 ```bash
