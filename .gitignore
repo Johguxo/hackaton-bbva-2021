@@ -1,0 +1,5 @@
+# Django stuffs
+*.jpg
+*.pyc
+*.sqlite3
+db.sqlite3
