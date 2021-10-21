@@ -95,6 +95,7 @@ def create_token(username, password, request, is_authenticated=False):
     Function to create a token for a user.
     Returns a dictionary with tokens
     """
+    application = Application.objects.get(name='HACKATHON')
     if is_authenticated:
         """
         url = (protocol + request.META['HTTP_HOST'] +
@@ -111,13 +112,14 @@ def create_token(username, password, request, is_authenticated=False):
                    timedelta(seconds=settings.OAUTH2_PROVIDER['ACCESS_TOKEN_EXPIRE_SECONDS']))
         access_token = AccessToken(token=generate_token(),
                                    expires=expires,
-                                   user=user)
+                                   user=user,
+                                   application=application)
         access_token.save()
-        refresh_token = RefreshToken(user=user,
+        refresh_token = RefreshToken.objects.create(user=user,
                                      token=generate_token(),
-                                     access_token=access_token
+                                     access_token=access_token,
+                                     application=application
                                      )
-        refresh_token.save()
         r_json = {'access_token': access_token.token,
                   'refresh_token': refresh_token.token}
         if 'access_token' not in r_json:
@@ -134,11 +136,13 @@ def create_token(username, password, request, is_authenticated=False):
                    timedelta(seconds=settings.OAUTH2_PROVIDER['ACCESS_TOKEN_EXPIRE_SECONDS']))
         access_token = AccessToken(token=generate_token(),
                                    expires=expires,
-                                   user=user)
+                                   user=user,
+                                   application=application)
         access_token.save()
         refresh_token = RefreshToken(user=user,
                                      token=generate_token(),
-                                     access_token=access_token
+                                     access_token=access_token,
+                                     application=application
                                      )
         refresh_token.save()
         r_json = {'access_token': access_token.token,

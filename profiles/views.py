@@ -20,7 +20,7 @@ from rest_framework.authentication import SessionAuthentication
 from django.middleware.csrf import get_token
 
 from profiles.utils import create_user, parse_login_request_log, create_token
-from profiles.serializers import TokenSerializer
+from profiles.serializers import ApplicationSerializer, TokenSerializer, UserSerializer
 
 # Create your views here.
 logger = logging.getLogger('login_logger')
@@ -73,10 +73,7 @@ class LoginAPI(APIView):
                 'is_active': True
             }
             if 'email' in self.request.data:
-                if 'business' in self.request.data and 'instructor' in self.request.data:
-                    user_query_params['email'] = request.data['email']
-                else:
-                    user_query_params['email'] = request.data['email']
+                user_query_params['email'] = request.data['email']
             user = User.objects.filter(**user_query_params)
             is_authenticated = False
             password = request.data['password']
@@ -92,8 +89,10 @@ class LoginAPI(APIView):
                 else:
                     return Response(response_error_dict)
                 rest = None
+                application = Application.objects.get(name='HACKATHON')
                 tokens = AccessToken.objects.filter(
                     user=obj_user, expires__gt=timezone.now(),
+                    application=application,
                 )
                 if tokens.exists():
                     token = tokens.last()
@@ -103,8 +102,11 @@ class LoginAPI(APIView):
                         obj_user.username, password,
                         request, is_authenticated
                     )
+                user_serializer = UserSerializer(obj_user, context=context)
+                application_serializer = ApplicationSerializer(application,context=context)
                 succesful_response = {
-                    'rest': rest, 'user': user.get_full_name(),
+                    'rest': rest, 'user': user_serializer.data,
+                    'status':True, 'app': application_serializer.data,
                 }
                 return Response(succesful_response, status=status.HTTP_200_OK)
 
@@ -115,8 +117,9 @@ class RegisterAPI(APIView):
 
     def post(self,request):
         """ POST Method """
+        context = {'request': request}
         dict_post = {}
-        
+        response_dict = {}
         dict_post['firstName'] = ''
         dict_post['lastName'] = ''
         if 'firstname' in request.data:
@@ -126,7 +129,6 @@ class RegisterAPI(APIView):
         if 'email' in request.data:
             dict_post['email'] = request.data['email']
         dict_post['password'] = request.data['password']
-        print(dict_post)
         new_user = create_user(dict_post)
         if new_user is not None:
             new_user_auth = authenticate(
@@ -152,4 +154,25 @@ class RegisterAPI(APIView):
                 except:
                         print('Error login log')
                 return Response(response_dict)
+            rest = None
+            application = Application.objects.get(name='HACKATHON')
+            tokens = AccessToken.objects.filter(
+                user=new_user, expires__gt=timezone.now(),
+                application=application
+            )
+            if tokens.exists():
+                token = tokens.last()
+                rest = TokenSerializer(token, context=context).data
+            else:
+                rest = create_token(
+                    new_user.username, dict_post['password'],
+                    request, is_authenticated
+                )
+            user_serializer = UserSerializer(new_user, context=context)
+            application_serializer = ApplicationSerializer(application,context=context)
+            succesful_response = {
+                'rest': rest, 'user': user_serializer.data,
+                'status':True, 'app': application_serializer.data
+            }
+            return Response(succesful_response, status=status.HTTP_200_OK)
         return Response({'status':True})

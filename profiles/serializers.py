@@ -25,8 +25,19 @@ class UserSerializer(ModelSerializer):
                         'date_joined': {'read_only': True, 'required': False}}
 
     def get_data(self, obj):
+        data = ''
         user_data = UserData.objects.filter(user=obj)
-        return user_data.about_me
+        if user_data.exists():
+            data = UserDataSerializer(user_data.last()).data
+        return data
+
+class UserDataSerializer(ModelSerializer):
+    """ Serializer for User Data Model"""
+
+    class Meta:
+        """ Meta class for user data serializer """
+        model = UserData
+        fields = '__all__'
 
 # TokenSerializer doesn't seem to be used
 class TokenSerializer(HyperlinkedModelSerializer):
@@ -59,3 +70,17 @@ class TokenSerializer(HyperlinkedModelSerializer):
 
     def get_refresh_token(self, obj):
         return RefreshToken.objects.filter(access_token=obj).last().token
+
+class ApplicationSerializer(ModelSerializer):
+    """ Serializer for the client token """
+    status = SerializerMethodField('bool')
+    
+
+    class Meta:
+        """ Meta class for Application serializer """
+        model = Application
+        fields = ('client_id', 'client_secret', 'status',)
+
+    def bool(self, obj):
+        """ This method only return a boolean variable """
+        return True
