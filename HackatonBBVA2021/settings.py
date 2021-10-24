@@ -28,6 +28,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+AWS_ACCESS_ID = 'AKIA5XJTNMA2TBTM3TFY'
+AWS_ACCESS_KEY = 'cGQD6sK6D59F31W0Tz0YBW5czJj9JvqP+pksqWOU'
 
 # Application definition
 
@@ -38,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
 
     'corsheaders',
     'bootstrap5',
@@ -75,6 +78,10 @@ CORS_ALLOW_METHODS = (
     'OPTIONS'
 )
 
+GRAPH_MODELS = {
+    'all_applications': True,
+    'group_models':True,
+}
 
 REST_FRAMEWORK = { 
     'DEFAULT_PERMISSION_CLASSES': (
